@@ -131,110 +131,135 @@ static portTASK_FUNCTION( vConductorUpdateTask, pvParameters )
 			VT_HANDLE_FATAL_ERROR(0);
 		}
 
+		int z = Buffer[0];
+		Buffer[0] = IR_MESSAGE;//Type
+		Buffer[1] = Buffer[7];//1-5
+		Buffer[2] = Buffer[4];//Parity
+		Buffer[3] = Buffer[5];//Count
+		Buffer[4] = Buffer[8];//Data
+		Buffer[5] = Buffer[9];//Data
+		Buffer[6] = Buffer[10];//Data
+		Buffer[7] = Buffer[11];//Data
+
+		//printf("Buffer 1: %d", Buffer[1]);
+
+		if(Buffer[1] != 0 && z != 0) {	//If sensor # is 0, we shouldn't be doing a damn thing.
+			conductorSendIRSensorDataMsg(irData, (Buffer), 8);
+		}
+//			vtLEDOff(0xFF);
+//			vtLEDOn(Buffer[1]);s
+//		int i;
+//		for (i = 0; i < 12; ++i) {
+//			if(Buffer[i] == '@') {
+//				 VT_HANDLE_FATAL_ERROR(i);
+//			}
+//		}
+
+
 		// Decide where to send the message
 		// This isn't a state machine, it is just acting as a router for messages
-		switch(recvMsgType) {
-			case vtI2CReadMsgType: {
-				// If it is a read, send it to the appropriate task
-				switch(vtGetI2CMsgType(Buffer)){
-
-					/*---EMPTY MESSAGES---*/
-
-					case COLOR_SENSOR_EMPTY_MESSAGE: {
-						notifyRequestRecvd(i2cData,portMAX_DELAY);
-						colorSensorMsgCount++;
-						if(colorSensorMsgCount != vtGetI2CMsgCount(Buffer)){
-							//Send Web Server an error with vtGetI2CMsgCount(Buffer) - colorSensorMsgCount
-							colorSensorMsgCount = vtGetI2CMsgCount(Buffer);
-						}
-						break;
-					}
-					case ENCODERS_EMPTY_MESSAGE: {
-						notifyRequestRecvd(i2cData,portMAX_DELAY);
-						encodersMsgCount++;
-						if(encodersMsgCount != vtGetI2CMsgCount(Buffer)){
-							//Send Web Server an error with vtGetI2CMsgCount(Buffer) - encodersMsgCount
-							encodersMsgCount = vtGetI2CMsgCount(Buffer);
-						}
-						break;
-					}
-					case IR_EMPTY_MESSAGE: {
-						notifyRequestRecvd(i2cData,portMAX_DELAY);
-						IRMsgCount++;
-						if(IRMsgCount != vtGetI2CMsgCount(Buffer)){
-							//Send Web Server an error with vtGetI2CMsgCount(Buffer) - IRMsgCount
-							IRMsgCount = vtGetI2CMsgCount(Buffer);
-						}
-						break;
-					}
-					case POWER_EMPTY_MESSAGE: {
-						notifyRequestRecvd(i2cData,portMAX_DELAY);
-						powerMsgCount++;
-						if(powerMsgCount != vtGetI2CMsgCount(Buffer)){
-							//Send Web Server an error with vtGetI2CMsgCount(Buffer) - powerMsgCount
-							powerMsgCount = vtGetI2CMsgCount(Buffer);
-						}
-						break;
-					}
-					case GENERIC_EMPTY_MESSAGE: {
-						break;
-					}
-
-					/*---DATA MESSAGES---*/
-
-					case COLOR_SENSOR_MESSAGE: {
-						notifyRequestRecvd(i2cData,portMAX_DELAY);
-						conductorSendColorSensorDataMsg(speedData, (Buffer), 8);	// Or (Buffer + 2) ?
-						colorSensorMsgCount++;
-						if(colorSensorMsgCount != vtGetI2CMsgCount(Buffer)){
-							//Send Web Server an error with vtGetI2CMsgCount(Buffer) - colorSensorMsgCount
-							colorSensorMsgCount = vtGetI2CMsgCount(Buffer);
-						}
-						break;
-					}
-					case ENCODERS_MESSAGE: {
-						notifyRequestRecvd(i2cData,portMAX_DELAY);
-						conductorSendMotorEncoderDataMsg(motorControl, (Buffer), 8);	// Or (Buffer + 2) ?
-						encodersMsgCount++;
-						if(encodersMsgCount != vtGetI2CMsgCount(Buffer)){
-							//Send Web Server an error with vtGetI2CMsgCount(Buffer) - encodersMsgCount
-							encodersMsgCount = vtGetI2CMsgCount(Buffer);
-						}
-						break;
-					}
-					case IR_MESSAGE: {
-						notifyRequestRecvd(i2cData,portMAX_DELAY);
-						conductorSendIRSensorDataMsg(irData, (Buffer), 8);		// Still figuring out if this should be 2, 4, or 8 but I'm pretty sure this should be 8
-						IRMsgCount++;
-						if(IRMsgCount != vtGetI2CMsgCount(Buffer)){
-							//Send Web Server an error with vtGetI2CMsgCount(Buffer) - IRMsgCount
-							IRMsgCount = vtGetI2CMsgCount(Buffer);
-						}
-						break;
-					}
-					case POWER_MESSAGE: {
-						notifyRequestRecvd(i2cData,portMAX_DELAY);
-						conductorSendPowerDataMsg(powerData, (Buffer), 4);	// Or (Buffer + 2) ?
-						powerMsgCount++;
-						if(powerMsgCount != vtGetI2CMsgCount(Buffer)){
-							//Send Web Server an error with vtGetI2CMsgCount(Buffer) - powerMsgCount
-							powerMsgCount = vtGetI2CMsgCount(Buffer);
-						}
-						break;
-					}
-				}	// End switch statement
-				break;
-			}	// End vtI2CReadMsgType case
-			case vtI2CMotorMsgType: {
-				// If it is a I2C motor message, just recognize that this is an ack from the slave
-				// Nothing else to do here
-				break;
-			}
-			default: {
-				VT_HANDLE_FATAL_ERROR(recvMsgType);
-				break;
-			}
-		}	// End switch statement
+//		switch(recvMsgType) {
+//			case vtI2CReadMsgType: {
+//				// If it is a read, send it to the appropriate task
+//				switch(vtGetI2CMsgType(Buffer)){
+//
+//					/*---EMPTY MESSAGES---*/
+//
+//					case COLOR_SENSOR_EMPTY_MESSAGE: {
+//						notifyRequestRecvd(i2cData,portMAX_DELAY);
+//						colorSensorMsgCount++;
+//						if(colorSensorMsgCount != vtGetI2CMsgCount(Buffer)){
+//							//Send Web Server an error with vtGetI2CMsgCount(Buffer) - colorSensorMsgCount
+//							colorSensorMsgCount = vtGetI2CMsgCount(Buffer);
+//						}
+//						break;
+//					}
+//					case ENCODERS_EMPTY_MESSAGE: {
+//						notifyRequestRecvd(i2cData,portMAX_DELAY);
+//						encodersMsgCount++;
+//						if(encodersMsgCount != vtGetI2CMsgCount(Buffer)){
+//							//Send Web Server an error with vtGetI2CMsgCount(Buffer) - encodersMsgCount
+//							encodersMsgCount = vtGetI2CMsgCount(Buffer);
+//						}
+//						break;
+//					}
+//					case IR_EMPTY_MESSAGE: {
+//						notifyRequestRecvd(i2cData,portMAX_DELAY);
+//						IRMsgCount++;
+//						if(IRMsgCount != vtGetI2CMsgCount(Buffer)){
+//							//Send Web Server an error with vtGetI2CMsgCount(Buffer) - IRMsgCount
+//							IRMsgCount = vtGetI2CMsgCount(Buffer);
+//						}
+//						break;
+//					}
+//					case POWER_EMPTY_MESSAGE: {
+//						notifyRequestRecvd(i2cData,portMAX_DELAY);
+//						powerMsgCount++;
+//						if(powerMsgCount != vtGetI2CMsgCount(Buffer)){
+//							//Send Web Server an error with vtGetI2CMsgCount(Buffer) - powerMsgCount
+//							powerMsgCount = vtGetI2CMsgCount(Buffer);
+//						}
+//						break;
+//					}
+//					case GENERIC_EMPTY_MESSAGE: {
+//						break;
+//					}
+//
+//					/*---DATA MESSAGES---*/
+//
+//					case COLOR_SENSOR_MESSAGE: {
+//						notifyRequestRecvd(i2cData,portMAX_DELAY);
+//						conductorSendColorSensorDataMsg(speedData, (Buffer), 8);	// Or (Buffer + 2) ?
+//						colorSensorMsgCount++;
+//						if(colorSensorMsgCount != vtGetI2CMsgCount(Buffer)){
+//							//Send Web Server an error with vtGetI2CMsgCount(Buffer) - colorSensorMsgCount
+//							colorSensorMsgCount = vtGetI2CMsgCount(Buffer);
+//						}
+//						break;
+//					}
+//					case ENCODERS_MESSAGE: {
+//						notifyRequestRecvd(i2cData,portMAX_DELAY);
+//						conductorSendMotorEncoderDataMsg(motorControl, (Buffer), 8);	// Or (Buffer + 2) ?
+//						encodersMsgCount++;
+//						if(encodersMsgCount != vtGetI2CMsgCount(Buffer)){
+//							//Send Web Server an error with vtGetI2CMsgCount(Buffer) - encodersMsgCount
+//							encodersMsgCount = vtGetI2CMsgCount(Buffer);
+//						}
+//						break;
+//					}
+//					case IR_MESSAGE: {
+//						notifyRequestRecvd(i2cData,portMAX_DELAY);
+//						conductorSendIRSensorDataMsg(irData, (Buffer), 8);		// Still figuring out if this should be 2, 4, or 8 but I'm pretty sure this should be 8
+//						IRMsgCount++;
+//						if(IRMsgCount != vtGetI2CMsgCount(Buffer)){
+//							//Send Web Server an error with vtGetI2CMsgCount(Buffer) - IRMsgCount
+//							IRMsgCount = vtGetI2CMsgCount(Buffer);
+//						}
+//						break;
+//					}
+//					case POWER_MESSAGE: {
+//						notifyRequestRecvd(i2cData,portMAX_DELAY);
+//						conductorSendPowerDataMsg(powerData, (Buffer), 4);	// Or (Buffer + 2) ?
+//						powerMsgCount++;
+//						if(powerMsgCount != vtGetI2CMsgCount(Buffer)){
+//							//Send Web Server an error with vtGetI2CMsgCount(Buffer) - powerMsgCount
+//							powerMsgCount = vtGetI2CMsgCount(Buffer);
+//						}
+//						break;
+//					}
+//				}	// End switch statement
+//				break;
+//			}	// End vtI2CReadMsgType case
+//			case vtI2CMotorMsgType: {
+//				// If it is a I2C motor message, just recognize that this is an ack from the slave
+//				// Nothing else to do here
+//				break;
+//			}
+//			default: {
+//				VT_HANDLE_FATAL_ERROR(recvMsgType);
+//				break;
+//			}
+//		}	// End switch statement
 	}	// End for loop
 }
 

@@ -16,6 +16,7 @@
 #include "vtI2C.h"
 #include "i2c_ARM.h"
 #include "myTypes.h"
+#include "json.h"
 
 #define baseStack 3
 #if PRINTF_VERSION == 1
@@ -57,7 +58,6 @@ void starti2cTask(myI2CStruct *params, unsigned portBASE_TYPE uxPriority, vtI2CS
     }
 }
 
-				  #include "json.h"
 portBASE_TYPE sendi2cTimerMsg(myI2CStruct *i2cData,portTickType ticksElapsed,portTickType ticksToBlock)
 {
     if (i2cData == NULL) {
@@ -114,19 +114,31 @@ portBASE_TYPE sendi2cMotorMsg(myI2CStruct *i2cData, uint8_t leftValue, uint8_t r
         VT_HANDLE_FATAL_ERROR(0);
     }
     myi2cMsg buffer;
-    buffer.length = 8;
+    buffer.length = 12;
     if (buffer.length > vti2cMaxLen) {
         // no room for this message
         VT_HANDLE_FATAL_ERROR(INCORRECT_I2C_MSG_FORMAT);
     }
-    buffer.buf[0] = 0xBB;       //i2c id
-    buffer.buf[1] = 0x00;       //class id
-    buffer.buf[2] = 0x00;       //parity
-    buffer.buf[3] = 0x00;       //count
-    buffer.buf[4] = leftValue;  //data[0]
-    buffer.buf[5] = rightValue; //data[1]
-    buffer.buf[6] = 0x00;       //data[2]
-    buffer.buf[7] = 0x00;       //data[3]
+
+    // This needs to be changed into logic on how we are determining which symbols to use based on the input data and what not.
+    // For example, since this is a sendi2cMotorMsg, buf[0->1] will always be '@m' for "@motor"
+    // There will need to be some simple logic for determining who is the sending and what their appropriate single letter symbol is.
+        // These should be defined in myTypes and standard across both the ARM and the PICs.
+    // May also need to consider having some more values being passed in to these functions with these new message format.
+        // Will have to look into this more.
+
+    buffer.buf[0] = '@';       //i2c id
+    buffer.buf[1] = 'm';       //class id
+    buffer.buf[2] = '@';       //parity
+    buffer.buf[3] = 'a';       //count
+    buffer.buf[4] = 0;  //data[0]
+    buffer.buf[5] = 0; //data[1]
+    buffer.buf[6] = 'g';       //data[2]
+    buffer.buf[7] = leftValue;       //data[3]
+	buffer.buf[8] = rightValue;
+	buffer.buf[9] = 0;
+	buffer.buf[10] = 0;
+	buffer.buf[11] = 0;
     buffer.msgType = vtI2CMotorMsgType;
     return(xQueueSend(i2cData->inQ,(void *) (&buffer),ticksToBlock));
 }
@@ -213,39 +225,50 @@ static portTASK_FUNCTION( vi2cUpdateTask, pvParameters )
         if (xQueueReceive(param->inQ,(void *) &msgBuffer,portMAX_DELAY) != pdTRUE) {
             VT_HANDLE_FATAL_ERROR(Q_RECV_ERROR);
         }
+		//else {
+//				if(msgBuffer.buf[0] == '@') {
+//		 	 VT_HANDLE_FATAL_ERROR(MOTHERFUCKINGCRASH);
+//		}
+		//}
+
         switch(getMsgType(&msgBuffer)) {
             case i2cTimerMsgType: {
                 // Poll local 2680 for data
-                notifyRequestSent();
+                //notifyRequestSent();
                 if (vtI2CEnQ(devPtr,vtI2CReadMsgType,SLAVE_ADDR,0,0,I2C_MSG_SIZE) != pdTRUE) {
                     VT_HANDLE_FATAL_ERROR(VT_I2C_Q_FULL);
                 }
+				break;
             }
             case vtI2CMotorMsgType: {
                 // Send motor command to local 2680
 
+				//printf("buffer length: %d", msgBuffer.length);
+
                //if (msgBuffer.buf[0] == 0xBB)
+			   //msgBuffer.length = 12;
+			   //msgBuffer.buf[0] = '@';
                  if (vtI2CEnQ(devPtr,vtI2CMotorMsgType,SLAVE_ADDR,msgBuffer.length,msgBuffer.buf,0) != pdTRUE){
                      VT_HANDLE_FATAL_ERROR(VT_I2C_Q_FULL);
                   }
 				break;
             }
-            case vtI2CWebServerMsgType: {
-                // Send web server to local 2680
-
-               //if (msgBuffer.buf[0] == 0xBB)
-                 if (vtI2CEnQ(devPtr,vtI2CWebServerMsgType,SLAVE_ADDR,msgBuffer.length,msgBuffer.buf,0) != pdTRUE){
-                     VT_HANDLE_FATAL_ERROR(VT_I2C_Q_FULL);
-                  }
-                break;
-            }
-            case notifyRqstRecvdMsgType: {
-                if(requestSent == 0){
-                    // Send I2C Error Message to Web Server
-                }
-                requestSent = 0;
-                break;
-            }
+//            case vtI2CWebServerMsgType: {
+//                // Send web server to local 2680
+//
+//               //if (msgBuffer.buf[0] == 0xBB)
+////                 if (vtI2CEnQ(devPtr,vtI2CWebServerMsgType,SLAVE_ADDR,msgBuffer.length,msgBuffer.buf,0) != pdTRUE){
+////                     VT_HANDLE_FATAL_ERROR(VT_I2C_Q_FULL);
+////                  }
+//                break;
+//            }
+//            case notifyRqstRecvdMsgType: {
+//                if(requestSent == 0){
+//                    // Send I2C Error Message to Web Server
+//                }
+//                requestSent = 0;
+//                break;
+//            }
             default: {
                 VT_HANDLE_FATAL_ERROR(UNKNOWN_I2C_MSG_TYPE);
                 break;

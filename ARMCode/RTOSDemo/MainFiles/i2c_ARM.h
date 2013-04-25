@@ -12,10 +12,10 @@ typedef struct __i2cStruct {
 } myI2CStruct;
 // Maximum length of a message that can be received by this task
 //#define vti2cMaxLen   100    //was 5
-#define vti2cMaxLen   9    //was 5
+#define vti2cMaxLen   13    //was 5
 
 //#define I2C_MSG_SIZE 120      //was 4
-#define I2C_MSG_SIZE 8      //was 4
+#define I2C_MSG_SIZE 12      //was 4
 
 #define SLAVE_ADDR 0x4F
 

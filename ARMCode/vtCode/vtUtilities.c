@@ -116,6 +116,10 @@ void vtHandleFatalError(int code,int line,char file[]) {
 	taskDISABLE_INTERRUPTS();
 	/* LEDs on ports 1 and 2 to output (1). */
 	// Note that all LED access is through the proper LPC library calls (or my own routines that call them)
+
+	// Print where error occured for debugging
+	printf("ERROR: code %d on line %d in file %s",code,line,file);
+
 	vtInitLED();
 	for (;;) {
 		// Silly delay loop, but we really don't have much choice here w/o interrupts and FreeRTOS...

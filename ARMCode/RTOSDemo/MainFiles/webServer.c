@@ -252,8 +252,8 @@ static portTASK_FUNCTION( vWebServerTask, pvParameters )
         switch(getMsgType(&msgBuffer)){
             case webNotifyCurrentSpeedMsgType:
             {
-                sendLCDCurrentSpeed(lcdData, getCurrentSpeedInfo(&msgBuffer));
-                sendi2cWebServerMsg(i2cData, 2, 1, portMAX_DELAY);
+                //sendLCDCurrentSpeed(lcdData, getCurrentSpeedInfo(&msgBuffer));
+                //sendi2cWebServerMsg(i2cData, 2, 1, portMAX_DELAY);
                 //printf("Right:  FS = %d    BS = %d    dist = %d    angle = %d\n", FS,BS, distance, angle);
                 //sendLCDDebugString(lcdData, 3, buffer, 18);
                 break;

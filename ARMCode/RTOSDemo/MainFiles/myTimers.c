@@ -22,7 +22,7 @@
 //
 // How often the timer that sends messages to the I2C task should run
 // Set the task up to run every 30 ms for the I2C timer
-#define i2cWRITE_RATE_BASE	( ( portTickType ) 20 / portTICK_RATE_MS)
+#define i2cWRITE_RATE_BASE	( ( portTickType ) 10 / portTICK_RATE_MS)
 
 // Callback function that is called by the I2C Timer
 // This badboy will send a message to the queue that is read by the I2C Task

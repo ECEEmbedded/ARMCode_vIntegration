@@ -71,6 +71,7 @@ typedef struct __powerStruct{
 #define AIUpdateWallAnglesMsgType 3
 #define AIUpdateIsWallsMsgType 4
 #define AIUpdateFinishLineMsgType 5
+#define AIUpdateFrontWallMsgType 6
 
 //Web Server thread incoming message types
 #define webNotifyCurrentSpeedMsgType 1

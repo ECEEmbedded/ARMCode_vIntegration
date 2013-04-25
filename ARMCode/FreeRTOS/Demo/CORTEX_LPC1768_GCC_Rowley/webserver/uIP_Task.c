@@ -287,7 +287,7 @@ extern void vParTestSetLEDState( long lState );
 
 	/* Process the form input sent by the IO page of the served HTML. */
 
-    webNotifyCurrentSpeed(webStruct, 1);
+   // webNotifyCurrentSpeed(webStruct, 1);
 //	c = strstr( pcInputString, "?" );
 //    if( c )
 //    {

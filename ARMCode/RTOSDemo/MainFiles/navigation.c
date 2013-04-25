@@ -84,6 +84,21 @@ portBASE_TYPE AIUpdateLeftWall(navigationStruct *navData, short distance, signed
 }
 portBASE_TYPE AIUpdateFrontWall(navigationStruct *navData, short distance)
 {
+	if (navData == NULL) {
+        VT_HANDLE_FATAL_ERROR(0);
+    }
+    navigationMsg buffer;
+    buffer.length = 2;
+    if (buffer.length > maxNavigationMsgLen) {
+        // no room for this message
+        VT_HANDLE_FATAL_ERROR(INCORRECT_NAVIGATION_MSG_FORMAT);
+    }
+    buffer.buf[0] = (distance >> 8) & 0xFF;
+	buffer.buf[1] = distance & 0xFF;
+    buffer.msgType = AIUpdateFrontWallMsgType;
+	//vtLEDOn(0x02);
+	//VT_HANDLE_FATAL_ERROR(MOTHERFUCKINGCRASH);
+    return(xQueueSend(navData->inQ,(void *) (&buffer),portMAX_DELAY));
 }
 portBASE_TYPE AIUpdateRightWall(navigationStruct *navData, short distance, signed char angle)
 {
@@ -297,18 +312,30 @@ static portTASK_FUNCTION( vNavigationTask, pvParameters )
             {
                 break;
             }
-            case AIUpdateDistancesMsgType:
+            case AIUpdateFrontWallMsgType:
             {
-              int i = 0;
-              for (i = 0; i < 6; ++i) {
-                if (msgBuffer.buf[i] != 0)
-                  world.irSensors[i] = msgBuffer.buf[i];
-              }
-
-                int turn = 0;
-
-                sendLCDCurrentSpeed(lcdData,  ++count);
-                sendi2cMotorMsg(i2cData, 0xFF, 0xFF, 100);
+				short dist = (msgBuffer.buf[0] << 8) | msgBuffer.buf[1];
+				//vtLEDOn(0x04);
+				//VT_HANDLE_FATAL_ERROR(MOTHERFUCKINGCRASH);
+				if(dist < 150) {
+	 				//vtLEDOff(0xFF);
+					vtLEDOn(0xFF);
+					sendi2cMotorMsg(i2cData, 0, 0xFE, portMAX_DELAY);
+				} else {
+	 				vtLEDOff(0xFF);
+					sendi2cMotorMsg(i2cData, 0xFE, 0xFE, portMAX_DELAY);
+				}
+				
+//              int i = 0;
+//              for (i = 0; i < 6; ++i) {
+//                if (msgBuffer.buf[i] != 0)
+//                  world.irSensors[i] = msgBuffer.buf[i];
+//              }
+//
+//                int turn = 0;
+//
+//                sendLCDCurrentSpeed(lcdData,  ++count);
+                //sendi2cMotorMsg(i2cData, 0xFF, 0xFF, 100);
                 break;
             }
             case AIUpdateWallAnglesMsgType:

@@ -247,7 +247,9 @@ void updateAndSendSideWall(navigationStruct* nav, vtLCDStruct* lcd, unsigned sho
 
 void updateAndSendFrontWall(navigationStruct* nav, vtLCDStruct* lcd, unsigned short dist) {
     short distance = dist - SEN_OFFSET_F;
-    AIUpdateFrontWall(nav,dist);
+	//vtLEDOn(0x01);
+	//VT_HANDLE_FATAL_ERROR(MOTHERFUCKINGCRASH);
+	AIUpdateFrontWall(nav,distance);
     if (LCDupdateFreq <= 0) {
         char buffer[20];
         if (distance < 400) {
